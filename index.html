@@ -1,47 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vedic Nadi Clock</title>
     <style>
-        body { background: #000; color: #f1c40f; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .nadi-display { font-size: 5rem; font-weight: bold; margin-bottom: 0; }
-        .pal-display { font-size: 2rem; color: #e67e22; margin-top: -10px; }
-        .info { color: #555; margin-top: 30px; font-size: 0.8rem; text-align: center; }
+        body { background: #000; color: #f1c40f; font-family: sans-serif; 
+               display: flex; flex-direction: column; align-items: center; 
+               justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        /* Adjusted sizes for a small home screen box */
+        .nadi { font-size: 20vw; font-weight: bold; line-height: 1; }
+        .pal { font-size: 8vw; color: #e67e22; }
+        .label { font-size: 4vw; color: #555; text-transform: uppercase; }
     </style>
 </head>
 <body>
-    <div class="nadi-display" id="nadi">--</div>
-    <div class="pal-display" id="pal">-- Pal</div>
-    <div class="info" id="sun-info">Calculating Sunrise...</div>
-
+    <div class="label">Ghaṭikā</div>
+    <div class="nadi" id="n">..</div>
+    <div class="pal" id="p">.. Pal</div>
     <script>
-        async function getSunrise() {
-            // This fetches sunrise for your current IP location automatically
-            const res = await fetch('https://api.sunrisesunset.io/json?lat=27.1767&lng=78.0081'); // Example Agra. In real use, browser Geolocation is better.
-            const data = await res.json();
-            return data.results.sunrise;
-        }
-
         async function init() {
-            const sunriseStr = await getSunrise();
-            const now = new Date();
-            const sunrise = new Date(now.toDateString() + ' ' + sunriseStr);
-
+            // Using your Agra coordinates
+            const res = await fetch('https://api.sunrisesunset.io/json?lat=27.1767&lng=78.0081');
+            const data = await res.json();
+            const sunrise = new Date(new Date().toDateString() + ' ' + data.results.sunrise);
+            
             setInterval(() => {
                 let diff = new Date() - sunrise;
-                if (diff < 0) diff += 86400000; // Handle time before sunrise as previous day cycle
-                
-                let totalMinutes = diff / 1000 / 60;
-                let totalNadis = totalMinutes / 24;
-                
-                let n = Math.floor(totalNadis);
-                let p = Math.floor((totalNadis - n) * 60); // 1 Nadi = 60 Pal
-                
-                document.getElementById('nadi').innerText = n;
-                document.getElementById('pal').innerText = p + " Pal";
-                document.getElementById('sun-info').innerText = "Sunrise: " + sunriseStr;
+                if (diff < 0) diff += 86400000;
+                let totalGhatis = (diff / 1000 / 60) / 24;
+                let g = Math.floor(totalGhatis);
+                let p = Math.floor((totalGhatis - g) * 60);
+                document.getElementById('n').innerText = g.toString().padStart(2, '0');
+                document.getElementById('p').innerText = p.toString().padStart(2, '0') + " Pal";
             }, 1000);
         }
         init();
