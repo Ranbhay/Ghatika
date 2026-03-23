@@ -1,40 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* Compact design for Home Screen Widgets */
         body { background: #000; color: #f1c40f; font-family: sans-serif; 
                display: flex; flex-direction: column; align-items: center; 
                justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        /* Adjusted sizes for a small home screen box */
-        .nadi { font-size: 20vw; font-weight: bold; line-height: 1; }
-        .pal { font-size: 8vw; color: #e67e22; }
-        .label { font-size: 4vw; color: #555; text-transform: uppercase; }
+        .label { font-size: 5vw; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        .ghati { font-size: 25vw; font-weight: 900; line-height: 1; color: #f1c40f; }
+        .pal { font-size: 10vw; color: #e67e22; font-weight: bold; }
+        .sub { font-size: 3vw; color: #444; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="label">Ghaṭikā</div>
-    <div class="nadi" id="n">..</div>
-    <div class="pal" id="p">.. Pal</div>
+    <div class="ghati" id="g">00</div>
+    <div class="pal" id="p">00 Pal</div>
+    <div class="sub">Vedic Time (Agra)</div>
+
     <script>
-        async function init() {
-            // Using your Agra coordinates
-            const res = await fetch('https://api.sunrisesunset.io/json?lat=27.1767&lng=78.0081');
-            const data = await res.json();
-            const sunrise = new Date(new Date().toDateString() + ' ' + data.results.sunrise);
+        function calculateGhatika() {
+            const now = new Date();
             
-            setInterval(() => {
-                let diff = new Date() - sunrise;
-                if (diff < 0) diff += 86400000;
-                let totalGhatis = (diff / 1000 / 60) / 24;
-                let g = Math.floor(totalGhatis);
-                let p = Math.floor((totalGhatis - g) * 60);
-                document.getElementById('n').innerText = g.toString().padStart(2, '0');
-                document.getElementById('p').innerText = p.toString().padStart(2, '0') + " Pal";
-            }, 1000);
+            // Approximate Sunrise for Agra (Mar 23) is ~6:18 AM
+            // We use a fixed reference to avoid API failures in the widget
+            const sunrise = new Date();
+            sunrise.setHours(6, 18, 0, 0); 
+
+            let diffMs = now - sunrise;
+            
+            // If before sunrise, we are in the previous day's cycle
+            if (diffMs < 0) diffMs += 86400000;
+
+            const totalMinutes = diffMs / (1000 * 60);
+            const totalGhatis = totalMinutes / 24; 
+            
+            const ghati = Math.floor(totalGhatis);
+            const pal = Math.floor((totalGhatis - ghati) * 60);
+
+            document.getElementById('g').innerText = ghati.toString().padStart(2, '0');
+            document.getElementById('p').innerText = pal.toString().padStart(2, '0') + " Pal";
         }
-        init();
+
+        // Run immediately
+        calculateGhatika();
+        // Update every second in case the widget stays active
+        setInterval(calculateGhatika, 1000);
     </script>
 </body>
 </html>
